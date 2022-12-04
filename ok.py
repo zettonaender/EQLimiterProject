@@ -20,13 +20,24 @@ def rp(relative_path):
 
     return os.path.join(base_path, relative_path)
 
-def doeq():
-	batch_processing(input_dir="ssweep",output_dir=rp('myresult/ssweep'),standardize_input=True,compensation='zero.csv',equalize=True,show_plot=showplot,convolution_eq=True,fs=[48000])
-	print('===============================================')
-	print('Graphic EQ generated. Check -> Output Folder/'+"ssweep")
+def doeq(x,tmp):
+	batch_processing(input_dir="ssweep",output_dir=rp('myresult/'+x),standardize_input=True,compensation='zero.csv',equalize=True,show_plot=showplot,convolution_eq=True,fs=[48000],parametric_eq=tmp,max_filters=[100,100])
+	print('')
+	print('Generated. Check -> '+'myresult/'+x)
 
 def startyourengine():
-	x=input("Input file name: ")
+	print('')
+	listofwavs=[]
+	cnt=0
+	for i in os.listdir():
+		if '.wav' in i:
+			listofwavs.append(i[:-4])
+			print(cnt,i)
+			cnt+=1
+	print('')
+	print("Choose wav file: ",end='')
+	x=int(input(''))
+	x=listofwavs[x]
 	sr,datastr=wavfile.read(rp(x+'.wav'))
 	data=datastr[:,0]
 	datar=datastr[:,1]
@@ -37,7 +48,7 @@ def startyourengine():
 	arr=20*np.log10(abs(arr))
 	freq=freq[:-1].copy()
 	leftamp=arr
-	#plt.plot(freq,leftamp)
+	plt.plot(freq,leftamp)
 
 	#Right Channel
 	arr=fftp.rfft(datar,sr)
@@ -45,7 +56,7 @@ def startyourengine():
 	arr=20*np.log10(abs(arr))
 	freq=freq[:-1].copy()
 	rightamp=arr
-	#plt.plot(freq,rightamp)
+	plt.plot(freq,rightamp)
 
 	#Get maxamp
 	mxleft=0.0
@@ -57,19 +68,21 @@ def startyourengine():
 
 	#Do reduction
 	reduceby=float(input("Enter reduction in dB: "))
-	clampleft=mxleft-reduceby
-	clampright=mxright-reduceby
+	x+='_'+str(reduceby)
+	mx=max(mxleft,mxright)
+	clampleft=mx-reduceby
+	clampright=mx-reduceby
 	for i in range(len(leftamp)):
 		leftamp[i]=min(leftamp[i],clampleft)
 	for i in range(len(rightamp)):
 		rightamp[i]=min(rightamp[i],clampright)
-	#plt.plot(freq,leftamp)
-	#plt.plot(freq,rightamp)
 
 	#Debug
-	#print("Yea")
-	#plt.xscale("log")
-	#plt.show()
+	plt.plot(freq,leftamp)
+	plt.plot(freq,rightamp)
+	plt.legend(['Before Left','Before Right','After Left','After Right'])
+	plt.xscale("log")
+	plt.show()
 
 	freqarr=[]
 	with open(rp('zero.csv')) as f:
@@ -80,7 +93,7 @@ def startyourengine():
 	tmp=interpolate.interp1d(freq,leftamp)
 	arrnew=tmp(freqarr)
 	arrnew=-1*arrnew
-	with open(rp('left.csv'), mode='w', newline='') as output:
+	with open(rp(x+'left.csv'), mode='w', newline='') as output:
 		writer=csv.writer(output,delimiter=',')
 		writer.writerow(['frequency','raw'])
 		for i in range(0,len(freqarr)):
@@ -89,7 +102,7 @@ def startyourengine():
 	tmp=interpolate.interp1d(freq,rightamp)
 	arrnew=tmp(freqarr)
 	arrnew=-1*arrnew
-	with open(rp('right.csv'), mode='w', newline='') as output:
+	with open(rp(x+'right.csv'), mode='w', newline='') as output:
 		writer=csv.writer(output,delimiter=',')
 		writer.writerow(['frequency','raw'])
 		for i in range(0,len(freqarr)):
@@ -98,10 +111,57 @@ def startyourengine():
 	try:
 		os.mkdir(rp('ssweep/'))
 	except OSError:
-		print ('')
-	shutil.move(rp('left.csv'),rp('ssweep/left.csv'))
-	shutil.move(rp('right.csv'),rp('ssweep/right.csv'))
+		pass
+	shutil.move(rp(x+'left.csv'),rp('ssweep/'+x+' left.csv'))
+	shutil.move(rp(x+'right.csv'),rp('ssweep/'+x+' right.csv'))
 
-	doeq()
+	print('Generate Parametric EQ? (y/n): ', end='')
+	tmp=input('')
+	print('')
+	if tmp=='y':
+		tmp=True
+	else:
+		tmp=False
+
+	try:
+		shutil.rmtree(rp('myresult/'+x))
+	except FileNotFoundError:
+		pass
+
+	doeq(x,tmp)
+
+	try:
+		shutil.rmtree('ssweep')
+	except FileNotFoundError:
+		pass
+
+	sr,leftwav=wavfile.read(rp('myresult/'+x+'/'+x+' left minimum phase 48000Hz.wav'))
+	sr,rightwav=wavfile.read(rp('myresult/'+x+'/'+x+' right minimum phase 48000Hz.wav'))
+	outputpath=rp('myresult/'+x+'/'+x+'.wav')
+	data=np.vstack((leftwav[:,0],rightwav[:,0]))
+	data=data.transpose()
+	wavfile.write(outputpath,sr,data)
+
+	if tmp:
+		leftparam=rp('myresult/'+x+'/'+x+' left ParametricEQ.txt')
+		rightparam=rp('myresult/'+x+'/'+x+' right ParametricEQ.txt')
+		outputtext=[]
+		outputtext.append('Preamp: 0 dB\nChannel: L\nPreamp: 0 dB\nChannel: R\nPreamp: 0 dB\nChannel: L\n')
+		with open(leftparam,'r') as f:
+			for i in f.readlines():
+				outputtext.append(i)
+			f.close()
+		outputtext.append('\nChannel: R\n')
+		with open(rightparam,'r') as f:
+			for i in f.readlines():
+				outputtext.append(i)
+			f.close()
+		outputparam=rp('myresult/'+x+'/'+x+' ParametricEQ.txt')
+		with open(outputparam,'w') as f:
+			for i in outputtext:
+				f.write(i)
+			f.close()
+
+	print('\n')
 
 startyourengine()

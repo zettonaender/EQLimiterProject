@@ -251,7 +251,7 @@ class FrequencyResponse:
         f = np.sort(np.unique(f.astype('int')))
         fr.interpolate(f=f)
         if normalize:
-            fr.raw -= np.max(fr.raw) + 0.5
+            fr.raw -= np.max(fr.raw) + 0.1
             if fr.raw[0] > 0.0:
                 # Prevent bass boost below lowest frequency
                 fr.raw[0] = 0.0
@@ -707,7 +707,7 @@ class FrequencyResponse:
         Args:
             fs: Sampling frequency in Hz
             f_res: Frequency resolution as sampling interval. 20 would result in sampling at 0 Hz, 20 Hz, 40 Hz, ...
-            normalize: Normalize gain to -0.5 dB
+            normalize: Normalize gain to -0.1 dB
 
         Returns:
             Minimum phase impulse response
@@ -731,7 +731,7 @@ class FrequencyResponse:
         if normalize:
             # Reduce by max gain to avoid clipping with 1 dB of headroom
             fr.raw -= np.max(fr.raw)
-            fr.raw -= 0.5
+            fr.raw -= 0.1
         # Minimum phase transformation by scipy's homomorphic method halves dB gain
         fr.raw *= 2
         # Convert amplitude to linear scale
@@ -759,7 +759,7 @@ class FrequencyResponse:
         if normalize:
             # Reduce by max gain to avoid clipping with 1 dB of headroom
             fr.raw -= np.max(fr.raw)
-            fr.raw -= 0.5
+            fr.raw -= 0.1
         # Convert amplitude to linear scale
         fr.raw = 10**(fr.raw / 20)
         # Calculate response
@@ -782,7 +782,7 @@ class FrequencyResponse:
         # Add parametric EQ settings
         parametric_eq_path = os.path.join(dir_path, model + ' ParametricEQ.txt')
         if os.path.isfile(parametric_eq_path) and self.parametric_eq is not None and len(self.parametric_eq):
-            max_gains = [x + 0.5 for x in max_gains]
+            max_gains = [x + 0.1 for x in max_gains]
 
             # Read Parametric eq
             with open(parametric_eq_path, 'r', encoding='utf-8') as f:
@@ -857,7 +857,7 @@ class FrequencyResponse:
         # Add fixed band eq
         fixed_band_eq_path = os.path.join(dir_path, model + ' FixedBandEQ.txt')
         if os.path.isfile(fixed_band_eq_path) and self.fixed_band_eq is not None and len(self.fixed_band_eq):
-            preamp = np.min([0.0, float(-np.max(self.fixed_band_eq))]) - 0.5
+            preamp = np.min([0.0, float(-np.max(self.fixed_band_eq))]) - 0.1
 
             # Read Parametric eq
             with open(fixed_band_eq_path, 'r', encoding='utf-8') as f:
