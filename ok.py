@@ -41,22 +41,33 @@ def startyourengine():
 	sr,datastr=wavfile.read(rp(x+'.wav'))
 	data=datastr[:,0]
 	datar=datastr[:,1]
+	if data.dtype==np.int16:
+		data=data/32768
+		datar=datar/32768
+	elif data.dtype==np.int32:
+		data=data/2147483648
+		datar=datar/2147483648
 
 	#Left Channel
-	arr=fftp.rfft(data,sr)
-	freq=fftp.rfftfreq(len(arr)*2,1/sr)
+	arr=fftp.rfft(data)
+	freq=fftp.rfftfreq(len(data),1/sr)
 	arr=20*np.log10(abs(arr))
-	freq=freq[:-1].copy()
 	leftamp=arr
-	plt.plot(freq,leftamp)
+	leftamp-=np.max(leftamp)
+	plt.plot(freq,leftamp,label='left')
 
 	#Right Channel
-	arr=fftp.rfft(datar,sr)
-	freq=fftp.rfftfreq(len(arr)*2,1/sr)
+	arr=fftp.rfft(datar)
+	freq=fftp.rfftfreq(len(datar),1/sr)
 	arr=20*np.log10(abs(arr))
-	freq=freq[:-1].copy()
 	rightamp=arr
-	plt.plot(freq,rightamp)
+	rightamp-=np.max(rightamp)
+	plt.plot(freq,rightamp,label='right')
+
+	#Plot
+	plt.xscale('log')
+	plt.legend()
+	plt.show()
 
 	#Get maxamp
 	mxleft=0.0
@@ -76,13 +87,6 @@ def startyourengine():
 		leftamp[i]=min(leftamp[i],clampleft)
 	for i in range(len(rightamp)):
 		rightamp[i]=min(rightamp[i],clampright)
-
-	#Debug
-	plt.plot(freq,leftamp)
-	plt.plot(freq,rightamp)
-	plt.legend(['Before Left','Before Right','After Left','After Right'])
-	plt.xscale("log")
-	plt.show()
 
 	freqarr=[]
 	with open(rp('zero.csv')) as f:
