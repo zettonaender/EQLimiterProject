@@ -30,8 +30,13 @@ def startyourengine():
 		helper.writeWav(ir, f'myresultfir/{x}_{reduceby:.1f}.wav')
 	if len(tmp)==2:
 		ir1, ir2= tmp[0], tmp[1]
-		freq, arr1 = helper.getFrequencyResponse(ir1, normalize=True)
-		freq, arr2 = helper.getFrequencyResponse(ir2, normalize=True)
+		freq, arr1 = helper.getFrequencyResponse(ir1, normalize=False)
+		freq, arr2 = helper.getFrequencyResponse(ir2, normalize=False)
+		max1 = np.max(arr1)
+		max2 = np.max(arr2)
+		max = np.max([max1,max2])
+		arr1-=max
+		arr2-=max
 		plt.plot(freq, arr1, label='Left')
 		plt.plot(freq, arr2, label='Right')
 		plt.legend()
