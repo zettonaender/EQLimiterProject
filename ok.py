@@ -92,9 +92,10 @@ def startyourengine():
 	with open(rp('zero.csv')) as f:
 		reader=csv.reader(f,delimiter=',')
 		for i in reader:
-			freqarr.append(i[0])
+			freqarr.append(float(i[0]))
+	freqarr=np.array(freqarr)
 
-	tmp=interpolate.interp1d(freq,leftamp)
+	tmp=interpolate.UnivariateSpline(freq,leftamp, s=0)
 	arrnew=tmp(freqarr)
 	arrnew=-1*arrnew
 	with open(rp(x+'left.csv'), mode='w', newline='') as output:
@@ -103,7 +104,7 @@ def startyourengine():
 		for i in range(0,len(freqarr)):
 			writer.writerow([str(freqarr[i]),str(round(arrnew[i],2))])
 
-	tmp=interpolate.interp1d(freq,rightamp)
+	tmp=interpolate.UnivariateSpline(freq,rightamp, s=0)
 	arrnew=tmp(freqarr)
 	arrnew=-1*arrnew
 	with open(rp(x+'right.csv'), mode='w', newline='') as output:
