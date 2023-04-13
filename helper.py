@@ -153,7 +153,10 @@ def readWav(filename, Normalize=True):
         raise ValueError('Unsupported type.')
     if Normalize:
         ir /= np.max(np.abs(ir))
-    channelCount = ir.shape[1]
+    try:
+        channelCount = ir.shape[1]
+    except IndexError:
+        channelCount = 1
     if channelCount == 2:
         return [ir[:,0], ir[:,1]]
     return [ir]
@@ -177,24 +180,6 @@ def convolveArr(input, filter, normalize=True):
     h = signal.convolve(input, filter, mode='full')
     if normalize:
         h /= np.max(h)
-    return h
-
-def resizeIR(h, length, normalize=True, sr=48000, inSample=False):
-    if inSample:
-        lengthInSamples=int(length*4)
-    else:
-        lengthInSamples=int(length*2*sr)
-    if len(h)<lengthInSamples:
-        h=np.append(h,np.zeros(lengthInSamples-len(h)))
-        return h
-
-    window=signal.windows.hann(lengthInSamples)
-    window=window[lengthInSamples//2:]
-    h=h[:lengthInSamples//2]
-    
-    h*=window
-    if normalize:
-        h/=np.max(h)
     return h
 
 def resizeIRLikeREW(h, sr=48000, normalize=True):
