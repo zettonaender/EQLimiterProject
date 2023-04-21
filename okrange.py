@@ -23,11 +23,11 @@ def startyourengine():
             cnt += 1
     print('')
     print("Choose wav file: ", end='')
+    x = int(input(''))
+    x = listofwavs[x]
     startfreq = input('Start frequency: ')
     endfreq = input('End frequency: ')
 
-    x = int(input(''))
-    x = listofwavs[x]
     tmp = helper.readWav(x+'.wav')
     if len(tmp) == 1:
         ir = tmp
