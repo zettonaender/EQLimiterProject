@@ -35,7 +35,6 @@ def startyourengine():
         arr -= np.max(arr)
         reduceby = getMaxInRange(freq, arr, startfreq, endfreq)
         arr = np.clip(arr, None, reduceby)
-        arr -= 0.1
         ir = helper.createMinPhase(freq, arr, taplength=131072)
         helper.writeWav(ir, f'myresultfir/{x}_{startfreq:.1f}_{endfreq:.1f}.wav')
     if len(tmp) == 2:
@@ -49,8 +48,6 @@ def startyourengine():
         reduceby = max(max1, max2)
         arr1 = np.clip(arr1, None, reduceby)
         arr2 = np.clip(arr2, None, reduceby)
-        arr1 -= 0.1
-        arr2 -= 0.1
         ir1, ir2 = helper.createMinPhaseStereo(
             freq, arr1, arr2, taplength=131072)
         helper.writeWavStereo(ir1, ir2, f'myresultfir/{x}_{startfreq:.1f}_{endfreq:.1f}.wav')

@@ -45,8 +45,6 @@ def startyourengine():
         reduceby = float(input('Reduce by (in dB): '))
         arr1 = np.clip(arr1, None, -reduceby)
         arr2 = np.clip(arr2, None, -reduceby)
-        arr1 -= 0.1
-        arr2 -= 0.1
         ir1, ir2 = helper.createMinPhaseStereo(
             freq, arr1, arr2, taplength=131072)
         helper.writeWavStereo(ir1, ir2, f'myresultfir/{x}_{reduceby:.1f}.wav')
