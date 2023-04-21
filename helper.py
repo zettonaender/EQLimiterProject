@@ -148,6 +148,9 @@ def readWav(filename, Normalize=True):
     if ir.dtype == np.int16:
         ir = ir.astype(np.float32)
         ir = ir / 32767
+    if ir.dtype == np.int32:
+        ir = ir.astype(np.float32)
+        ir = ir / 2147483647
     elif ir.dtype != np.float32 and ir.dtype != np.float64:
         print(ir.dtype)
         raise ValueError('Unsupported type.')
