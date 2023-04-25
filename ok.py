@@ -48,6 +48,8 @@ def startyourengine():
         ir1, ir2 = helper.createMinPhaseStereo(
             freq, arr1, arr2, taplength=131072)
         helper.writeWavStereo(ir1, ir2, f'myresultfir/{x}_{reduceby:.1f}.wav')
-
-os.mkdir('myresultfir', exist_ok=True)
+try:
+    os.mkdir('myresultfir')
+except Exception:
+    pass
 startyourengine()
