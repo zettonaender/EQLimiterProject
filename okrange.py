@@ -52,5 +52,5 @@ def startyourengine():
             freq, arr1, arr2, taplength=131072)
         helper.writeWavStereo(ir1, ir2, f'myresultfir/{x}_{startfreq:.1f}_{endfreq:.1f}.wav')
 
-
+os.mkdir('myresultfir', exist_ok=True)
 startyourengine()
